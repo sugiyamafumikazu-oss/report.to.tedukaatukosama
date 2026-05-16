@@ -1,0 +1,386 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>障害年金相談 議事録・分析ダッシュボード</title>
+<script src="https://cdn.tailwindcss.com"></script>
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+
+<style>
+body { font-family: 'Helvetica Neue', Arial, 'Hiragino Kaku Gothic ProN', 'Hiragino Sans', Meiryo, sans-serif; background-color: #fafaf9; color: #292524; }
+.chart-container { position: relative; width: 100%; max-width: 800px; margin-left: auto; margin-right: auto; height: 300px; max-height: 400px; }
+@media (min-width: 768px) { .chart-container { height: 350px; } }
+.tab-content { display: none; }
+.tab-content.active { display: block; animation: fadeIn 0.3s ease-in-out; }
+@keyframes fadeIn { from { opacity: 0; transform: translateY(5px); } to { opacity: 1; transform: translateY(0); } }
+</style>
+</head>
+<body class="bg-stone-50 text-stone-800 antialiased min-h-screen flex flex-col">
+
+<header class="bg-white border-b border-stone-200 sticky top-0 z-10 shadow-sm">
+    <div class="max-w-6xl mx-auto px-4 py-4 flex flex-col md:flex-row justify-between items-center gap-4">
+        <div>
+            <h1 class="text-xl md:text-2xl font-bold text-stone-900">障害年金相談 分析レポート</h1>
+            <p class="text-sm text-stone-500 mt-1">👤 相談者: 手塚 加奈様 (対象者: 敦子様) | 📅 相談日: 2026年5月15日</p>
+        </div>
+        <nav class="flex space-x-2 overflow-x-auto w-full md:w-auto pb-2 md:pb-0">
+            <button onclick="switchTab('summary')" id="tab-summary" class="nav-btn whitespace-nowrap px-4 py-2 rounded-full bg-teal-600 text-white font-medium text-sm transition-colors hover:bg-teal-700">📊 要約・分析</button>
+            <button onclick="switchTab('todo')" id="tab-todo" class="nav-btn whitespace-nowrap px-4 py-2 rounded-full bg-stone-200 text-stone-700 font-medium text-sm transition-colors hover:bg-stone-300">✅ アクション・ToDo</button>
+            <button onclick="switchTab('transcript')" id="tab-transcript" class="nav-btn whitespace-nowrap px-4 py-2 rounded-full bg-stone-200 text-stone-700 font-medium text-sm transition-colors hover:bg-stone-300">📝 議事録詳細</button>
+        </nav>
+    </div>
+</header>
+
+<main class="flex-grow max-w-6xl mx-auto px-4 py-8 w-full">
+
+    <section id="summary" class="tab-content active">
+        <div class="mb-6">
+            <h2 class="text-2xl font-bold mb-2 border-b-2 border-teal-600 pb-2 inline-block">📊 面談要約と状況分析</h2>
+            <p class="text-stone-600 mt-2">本セクションでは、46分間にわたる面談の要点を抽出し、対象者の状況、抱えている課題、および時系列の進行状況を整理しています。チャートを利用して、手続き上の問題点（診断書の空白期間）を視覚的に把握できます。</p>
+        </div>
+
+        <div class="grid grid-cols-1 md:grid-cols-3 gap-6 mb-8">
+            <div class="bg-white p-5 rounded-xl shadow-sm border border-stone-200">
+                <h3 class="font-bold text-lg text-stone-900 mb-3">基本情報</h3>
+                <ul class="space-y-2 text-sm">
+                    <li><span class="font-semibold w-20 inline-block">対象者:</span> 手塚 敦子様 (昭和37年生/<span class="text-amber-600 font-bold border-b border-amber-600 cursor-help" title="女性（昭和37年生）の特別支給の老齢厚生年金は原則64歳開始です。要確認。">63歳？※要確認</span>)</li>
+                    <li><span class="font-semibold w-20 inline-block">傷病名:</span> 多系統萎縮症</li>
+                    <li><span class="font-semibold w-20 inline-block">初診日:</span> <span class="text-amber-600 font-bold border-b border-amber-600 cursor-help" title="文字起こし内で「10/27」と「11/2（藤枝市立総合病院・耳鼻科）」で揺れあり。受診状況等証明書等で最終確定が必須。">2023年10月27日？※要確認</span></li>
+                    <li><span class="font-semibold w-20 inline-block">認定日:</span> 2025年4月27日 <span class="text-xs text-stone-500">(初診日により変動あり)</span></li>
+                </ul>
+                <div class="mt-4 p-3 bg-amber-50 rounded border border-amber-200 text-xs text-stone-700">
+                    <p class="font-bold text-amber-800 mb-1">⚠️ 前提条件の再精査</p>
+                    <p>特別支給開始年齢（64歳の可能性）および、正確な初診日（10/27か11/2か）は、年金記録と受診状況等証明書により至急最終確定させる必要があります。</p>
+                </div>
+            </div>
+            
+            <div class="bg-white p-5 rounded-xl shadow-sm border border-stone-200 md:col-span-2">
+                <h3 class="font-bold text-lg text-stone-900 mb-3">コア課題と【重要】認定戦略の転換および対処案</h3>
+                <p class="text-sm mb-3 text-stone-700">年金事務所は「関節可動域等の計測欄が空欄であるため事後重症扱いになる」と指摘していますが、これは<strong>「肢体の障害」用診断書</strong>を前提とした指摘です。</p>
+                
+                <div class="space-y-3">
+                    <div class="bg-blue-50 p-3 rounded text-sm border-l-4 border-blue-600 shadow-sm">
+                        <p class="font-semibold mb-1 text-blue-900">💡 戦略転換：多系統萎縮症は「神経系統の障害」で勝負する</p>
+                        <p class="text-blue-800">本疾患は、関節可動域ではなく<strong>「神経系統の障害」または「その他の障害」（様式第120号の7等）</strong>の認定基準（日常生活能力の程度等）で評価されるべき疾患です。診断書様式を変更することで、「計測値の空欄」自体を主要論点から外せる可能性があります。</p>
+                    </div>
+
+                    <div class="bg-red-50 p-3 rounded text-sm border-l-4 border-red-600 shadow-sm">
+                        <p class="font-semibold mb-1 text-red-900">🔥 認定日「計測欄空欄」問題への打開策（優先順位順）</p>
+                        <ol class="list-decimal pl-5 space-y-1 text-red-800">
+                            <li><strong>カルテ・診療記録からの客観的所見の再構築：</strong><br>可動域計測が空欄でも、認定日3か月以内のカルテに記載された「神経学的所見」を根拠に、神経系統の障害としての診断書再作成を依頼する。</li>
+                            <li><strong>他科受診記録の活用：</strong><br>認定日前後の耳鼻科、泌尿器科などの受診記録を収集し、総合的な日常生活能力の低下を立証する。</li>
+                            <li><strong>9月計測データの「遡及解釈」の依頼：</strong><br>進行性疾患の特性を踏まえ、9月の計測結果から「4月時点でも同等以上の障害があった」との医学的推定を記載してもらう。</li>
+                            <li><strong>病歴・就労状況等申立書での強力な補完：</strong><br>就労不能と傷病手当金受給の事実を、重度障害の間接証拠として提示する。</li>
+                        </ol>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="bg-white p-6 rounded-xl shadow-sm border border-stone-200">
+            <h3 class="font-bold text-lg text-stone-900 mb-4">タイムライン分析: 制度利用と症状進行</h3>
+            <p class="text-sm text-stone-500 mb-4">初診からの経過月数と主要なイベントの相関を示します。認定日と実際の計測日のズレが視覚的に確認できます。</p>
+            <div class="chart-container">
+                <canvas id="timelineChart"></canvas>
+            </div>
+            <div class="mt-4 flex flex-wrap gap-2 justify-center text-xs">
+                <span class="px-2 py-1 bg-blue-100 text-blue-800 rounded">23/10: 初診</span>
+                <span class="px-2 py-1 bg-stone-100 text-stone-800 rounded">24/5: 退職</span>
+                <span class="px-2 py-1 bg-stone-100 text-stone-800 rounded">24/7: 63歳到達</span>
+                <span class="px-2 py-1 bg-red-100 text-red-800 rounded font-bold">25/4: 障害認定日</span>
+                <span class="px-2 py-1 bg-amber-100 text-amber-800 rounded">25/9: 手帳用計測</span>
+                <span class="px-2 py-1 bg-green-100 text-green-800 rounded font-bold">現在 (26/5)</span>
+            </div>
+        </div>
+
+        <div class="mt-8 bg-white p-6 rounded-xl shadow-sm border border-teal-200 border-l-4 border-l-teal-600">
+            <h3 class="font-bold text-lg text-stone-900 mb-4">💡 検討事項: 特別支給の老齢年金と障害年金の選択・併給について</h3>
+            <div class="space-y-4">
+                <div class="bg-stone-50 p-4 rounded-lg border border-stone-200">
+                    <h4 class="font-semibold text-stone-800 mb-2 flex items-center gap-2">
+                        <span class="bg-stone-200 p-1 rounded text-sm">❓</span> ご相談者（加奈様）の疑問の核心
+                    </h4>
+                    <p class="text-sm text-stone-700">「認定日時点の診断書が無効で『事後重症』になった場合、過去の期間（63歳～現在）の年金はどうなるのか？ 障害年金がダメなら、せめて『特別支給の老齢年金（障害者特例）』を使って過去の分を受け取れないか？」</p>
+                </div>
+                
+                <div class="bg-teal-50 p-4 rounded-lg border border-teal-100">
+                    <h4 class="font-semibold text-teal-900 mb-2 flex items-center gap-2">
+                        <span class="bg-teal-200 p-1 rounded text-sm">👩‍⚖️</span> 社労士の法的見解と正しい制度解釈
+                    </h4>
+                    <ul class="list-disc pl-5 space-y-2 text-sm text-stone-800 mb-4">
+                        <li><strong>65歳前の「1人1年金」の原則と選択：</strong> 65歳未満では、障害年金と老齢年金（特別支給）を同時に受給することはできず、<strong>選択制</strong>となります。</li>
+                        <li><strong>障害者特例の選択肢：</strong> 老齢年金を選択した場合でも、障害厚生年金3級以上に該当する状態であれば、「障害者特例による定額部分の加算」をつけて受給することが可能です。</li>
+                        <li><strong>過去に遡るための条件：</strong> ただし、特例加算を過去に適用するためにも、結局は<strong>「過去の時点（認定日等）での有効な診断書」</strong>が必須です。</li>
+                        <li><strong>傷病手当金との併給調整：</strong> どちらの年金を選んでも、遡及した場合は2025年10月まで受給していた「傷病手当金」との併給調整（返還等）が発生します。</li>
+                    </ul>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <section id="todo" class="tab-content">
+        <div class="mb-6">
+            <h2 class="text-2xl font-bold mb-2 border-b-2 border-teal-600 pb-2 inline-block">✅ 今後のToDoとスケジュール</h2>
+            <p class="text-stone-600 mt-2">認定日請求を成功させるための具体的なアクションプランです。進捗を記録してください。</p>
+        </div>
+
+        <div class="mb-6 bg-white p-5 rounded-xl border border-stone-200 shadow-sm">
+            <div class="flex justify-between items-center mb-2">
+                <h3 class="font-bold text-lg">タスク進捗状況</h3>
+                <span id="progress-text" class="text-teal-600 font-bold text-lg">0%</span>
+            </div>
+            <div class="w-full bg-stone-200 rounded-full h-2.5">
+                <div id="progress-bar" class="bg-teal-600 h-2.5 rounded-full transition-all duration-500" style="width: 0%"></div>
+            </div>
+        </div>
+
+        <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+            <div class="bg-white p-6 rounded-xl border-t-4 border-t-blue-500 shadow-sm">
+                <h3 class="font-bold text-lg text-stone-900 mb-4">👤 お客様のToDo (手塚様)</h3>
+                <ul class="space-y-3" id="client-tasks">
+                    <li class="flex items-start gap-3">
+                        <input type="checkbox" class="task-check mt-1 w-5 h-5 accent-teal-600 cursor-pointer" onchange="updateProgress()">
+                        <div>
+                            <p class="font-medium">既存の診断書（2種類）の写真を送信</p>
+                            <p class="text-xs text-stone-500">LINEにて「認定日時点」と「現症」の診断書画像を送付する。</p>
+                        </div>
+                    </li>
+                    <li class="flex items-start gap-3">
+                        <input type="checkbox" class="task-check mt-1 w-5 h-5 accent-teal-600 cursor-pointer" onchange="updateProgress()">
+                        <div>
+                            <p class="font-medium">契約書の確認と返送</p>
+                            <p class="text-xs text-stone-500">送付される契約書・委任状を確認し、手続きを進める。</p>
+                        </div>
+                    </li>
+                    <li class="flex items-start gap-3">
+                        <input type="checkbox" class="task-check mt-1 w-5 h-5 accent-teal-600 cursor-pointer" onchange="updateProgress()">
+                        <div>
+                            <p class="font-medium">主治医への診断書作成打診 (次回の受診日：5月20日)</p>
+                            <p class="text-xs text-stone-500">5月20日の受診時に、社労士が作成する「依頼書」を持参し医師に相談する。<br>
+                            <strong>【重要】</strong> 特に以下を伝える：<br>
+                            ・関節可動域の空欄が問題になっているが、本疾患は「神経系統」での申請を考えている。<br>
+                            ・4月当時のカルテから神経学的所見や、9月の計測結果から4月時点の障害程度を推定する一文を書いてもらえないか相談する。</p>
+                        </div>
+                    </li>
+                </ul>
+            </div>
+
+            <div class="bg-white p-6 rounded-xl border-t-4 border-t-teal-600 shadow-sm">
+                <h3 class="font-bold text-lg text-stone-900 mb-4">🏢 社労士のToDo (当事務所)</h3>
+                <ul class="space-y-3" id="office-tasks">
+                    <li class="flex items-start gap-3">
+                        <input type="checkbox" class="task-check mt-1 w-5 h-5 accent-teal-600 cursor-pointer" onchange="updateProgress()">
+                        <div>
+                            <p class="font-medium text-amber-700">【要確認】年金記録および初診日の事実再確認</p>
+                            <p class="text-xs text-stone-500">①昭和37年生まれ女性の特別支給開始年齢を年金事務所で再確認する。<br>②「受診状況等証明書」により、初診日（10/27か11/2か）を最終確定させる。</p>
+                        </div>
+                    </li>
+                    <li class="flex items-start gap-3">
+                        <input type="checkbox" class="task-check mt-1 w-5 h-5 accent-teal-600 cursor-pointer" onchange="updateProgress()">
+                        <div>
+                            <p class="font-medium text-blue-700">年金事務所への「適切な診断書様式」の事前確認</p>
+                            <p class="text-xs text-stone-500">「肢体の障害」ではなく「神経系統の障害」で申請を進める方針について、見解と適用可否の確認を行う。</p>
+                        </div>
+                    </li>
+                    <li class="flex items-start gap-3">
+                        <input type="checkbox" class="task-check mt-1 w-5 h-5 accent-teal-600 cursor-pointer" onchange="updateProgress()" checked>
+                        <div>
+                            <p class="font-medium line-through text-stone-400">特別支給の老齢年金との調整に関する調査</p>
+                            <p class="text-xs text-stone-500">事後重症時の遡及期間における特例・併給の可否を調べ、レポートをLINEで送信する。（✅ 完了）</p>
+                        </div>
+                    </li>
+                    <li class="flex items-start gap-3">
+                        <input type="checkbox" class="task-check mt-1 w-5 h-5 accent-teal-600 cursor-pointer" onchange="updateProgress()">
+                        <div>
+                            <p class="font-medium">医師宛の「診断書作成依頼書」の作成（カルテ発掘）</p>
+                            <p class="text-xs text-stone-500"><strong>「神経系統の障害」</strong>を意識し、認定日3か月以内のカルテ記載事項の抽出を求める依頼書を作成する。</p>
+                        </div>
+                    </li>
+                </ul>
+            </div>
+        </div>
+    </section>
+
+    <section id="transcript" class="tab-content">
+        <div class="mb-6">
+            <h2 class="text-2xl font-bold mb-2 border-b-2 border-teal-600 pb-2 inline-block">📝 整形済み議事録</h2>
+            <p class="text-stone-600 mt-2">面談の文字起こしをトピックごとに整理・構造化しました。各見出しをクリックすると詳細が展開されます。</p>
+        </div>
+
+        <div class="space-y-4">
+            <div class="border border-stone-200 rounded-xl bg-white overflow-hidden">
+                <button class="w-full text-left px-6 py-4 bg-stone-100 hover:bg-stone-200 font-bold text-lg flex justify-between items-center" onclick="toggleAccordion('acc1')">
+                    1. 基本情報と病状の経緯
+                    <span id="icon-acc1" class="transform transition-transform">▼</span>
+                </button>
+                <div id="acc1" class="px-6 py-4 hidden text-sm leading-relaxed text-stone-700">
+                    <p><strong>社労士:</strong> 対象者は手塚敦子様、ご相談者は娘の加奈様。ご病気は多系統萎縮症ですね。初診日はいつになりますか？</p>
+                    <p><strong>相談者:</strong> 2023年10月27日です。最初は酷いいびきや睡眠時の無呼吸があり、耳鼻科を受診しました。その後、ふらつきの症状などがあり、様々な検査を経て2024年の2月〜3月頃に大学病院の遺伝子検査で多系統萎縮症と診断されました。</p>
+                    <p><strong>社労士:</strong> 治療状況や現在の症状はいかがですか？</p>
+                    <p><strong>相談者:</strong> 根本的な治療法はなく、パーキンソン病の薬や血圧の薬を飲んでいます。尿失禁が進行し、現在は24時間おむつを使用しています。意識や意思疎通はしっかりできています。</p>
+                </div>
+            </div>
+
+            <div class="border border-stone-200 rounded-xl bg-white overflow-hidden">
+                <button class="w-full text-left px-6 py-4 bg-stone-100 hover:bg-stone-200 font-bold text-lg flex justify-between items-center" onclick="toggleAccordion('acc2')">
+                    2. 診断書（認定日）に関する問題点
+                    <span id="icon-acc2" class="transform transition-transform">▼</span>
+                </button>
+                <div id="acc2" class="px-6 py-4 hidden text-sm leading-relaxed text-stone-700">
+                    <p><strong>社労士:</strong> 認定日（2025年4月27日）の診断書について、年金事務所から指摘があったとのことですが。</p>
+                    <p><strong>相談者:</strong> 診断書内の「可動域」や「人体の絵」などの計測部分が空欄になっています。病院からは「いつもこうやって出している」と言われましたが、年金事務所では「これでは認定日請求は認められず、事後重症になるかもしれない」と言われました。実際に計測をしたのは手帳申請時の2025年9月17日です。</p>
+                    <p><strong>社労士:</strong> 認定日から5ヶ月後の計測ですね。年金の時効は5年あるので、急いで空欄のまま出すよりは、客観的な指標を添えて認定日請求を通す戦略を練るのがベストです。</p>
+                </div>
+            </div>
+
+            <div class="border border-stone-200 rounded-xl bg-white overflow-hidden">
+                <button class="w-full text-left px-6 py-4 bg-stone-100 hover:bg-stone-200 font-bold text-lg flex justify-between items-center" onclick="toggleAccordion('acc3')">
+                    3. 年金の選択と併給に関する疑問
+                    <span id="icon-acc3" class="transform transition-transform">▼</span>
+                </button>
+                <div id="acc3" class="px-6 py-4 hidden text-sm leading-relaxed text-stone-700">
+                    <p><strong>相談者:</strong> 母は2024年7月で63歳になり「特別支給の老齢年金」の案内が来ています。年金事務所では障害年金の方が月1万円多いと計算されました。もし認定日が認められず事後重症になった場合、事後重症になる前の期間は、特別支給の老齢年金を受け取ることは可能ですか？</p>
+                    <p><strong>社労士:</strong> 原則は「1人1年金」です。特別支給の老齢厚生年金と障害年金（事後重症）の期間の取り扱いについては、遡及部分の選択・併給が可能か正確に調べる必要がありますので、宿題とさせてください。</p>
+                </div>
+            </div>
+
+            <div class="border border-stone-200 rounded-xl bg-white overflow-hidden">
+                <button class="w-full text-left px-6 py-4 bg-stone-100 hover:bg-stone-200 font-bold text-lg flex justify-between items-center" onclick="toggleAccordion('acc4')">
+                    4. 契約内容と今後の進め方
+                    <span id="icon-acc4" class="transform transition-transform">▼</span>
+                </button>
+                <div id="acc4" class="px-6 py-4 hidden text-sm leading-relaxed text-stone-700">
+                    <p><strong>社労士:</strong> 費用について確認です。成功報酬は「年金の2ヶ月分」＋「遡及受給できた場合の遡及分の15%」です。事後重症となった場合は遡及分がないため、加算の15%は発生しません。また、傷病手当金受給期間との調整部分は15%計算から除外します。</p>
+                    <p><strong>相談者:</strong> わかりました。来週5月20日に病院へ行く予定ですが、どうすればよいですか？</p>
+                    <p><strong>社労士:</strong> まず、お手元にある2種類の診断書の写真をLINEで送ってください。それを拝見し、認定日請求を通すための「診断書作成依頼書」を当事務所で作成します。それを20日に新しい先生にお渡しいただく流れにしましょう。</p>
+                </div>
+            </div>
+        </div>
+    </section>
+
+</main>
+
+<script>
+function switchTab(tabId) {
+    const tabs = ['summary', 'todo', 'transcript'];
+    const navBtns = ['tab-summary', 'tab-todo', 'tab-transcript'];
+    
+    tabs.forEach(id => {
+        document.getElementById(id).classList.remove('active');
+    });
+    navBtns.forEach(id => {
+        document.getElementById(id).classList.remove('bg-teal-600', 'text-white');
+        document.getElementById(id).classList.add('bg-stone-200', 'text-stone-700');
+    });
+
+    document.getElementById(tabId).classList.add('active');
+    document.getElementById('tab-' + tabId).classList.remove('bg-stone-200', 'text-stone-700');
+    document.getElementById('tab-' + tabId).classList.add('bg-teal-600', 'text-white');
+}
+
+function updateProgress() {
+    const checkboxes = document.querySelectorAll('.task-check');
+    const total = checkboxes.length;
+    let checked = 0;
+    
+    checkboxes.forEach(cb => {
+        if(cb.checked) checked++;
+        const pElement = cb.nextElementSibling.querySelector('p:first-child');
+        if (pElement) {
+            if(cb.checked) {
+                pElement.classList.add('line-through', 'text-stone-400');
+            } else {
+                pElement.classList.remove('line-through', 'text-stone-400');
+            }
+        }
+    });
+
+    // Handle potential divide by zero just in case
+    const percentage = total === 0 ? 0 : Math.round((checked / total) * 100);
+    document.getElementById('progress-bar').style.width = percentage + '%';
+    document.getElementById('progress-text').innerText = percentage + '%';
+}
+
+function toggleAccordion(id) {
+    const el = document.getElementById(id);
+    const icon = document.getElementById('icon-' + id);
+    if(el.classList.contains('hidden')) {
+        el.classList.remove('hidden');
+        icon.style.transform = 'rotate(180deg)';
+    } else {
+        el.classList.add('hidden');
+        icon.style.transform = 'rotate(0deg)';
+    }
+}
+
+document.addEventListener('DOMContentLoaded', function() {
+    // Initial progress bar calculation
+    updateProgress();
+
+    // Chart.js initialization
+    const ctx = document.getElementById('timelineChart').getContext('2d');
+    
+    const timelineData = [
+        {x: 0, y: 1, label: '初診日 (23年10月)'},
+        {x: 7, y: 2, label: '退職 (24年5月)'},
+        {x: 9, y: 3, label: '63歳到達 (24年7月)'},
+        {x: 18, y: 4, label: '障害認定日 (25年4月)'},
+        {x: 23, y: 5, label: '手帳用計測 (25年9月)'},
+        {x: 24, y: 6, label: '傷病手当終了 (25年10月)'},
+        {x: 31, y: 7, label: '現在/相談日 (26年5月)'}
+    ];
+
+    new Chart(ctx, {
+        type: 'scatter',
+        data: {
+            datasets: [{
+                label: '主要イベント（初診からの経過月数）',
+                data: timelineData,
+                backgroundColor: '#0d9488',
+                borderColor: '#115e59',
+                pointRadius: 8,
+                pointHoverRadius: 12,
+                pointBackgroundColor: function(context) {
+                    var index = context.dataIndex;
+                    return index === 3 ? '#dc2626' : (index === 6 ? '#16a34a' : '#0d9488');
+                }
+            }]
+        },
+        options: {
+            maintainAspectRatio: false,
+            responsive: true,
+            scales: {
+                x: {
+                    title: { display: true, text: '初診日からの経過月数', font: { weight: 'bold' } },
+                    min: -1,
+                    max: 33,
+                    ticks: { stepSize: 3 }
+                },
+                y: {
+                    display: false,
+                    min: 0,
+                    max: 8
+                }
+            },
+            plugins: {
+                legend: { display: false },
+                tooltip: {
+                    backgroundColor: 'rgba(28, 25, 23, 0.9)',
+                    titleFont: { size: 14 },
+                    bodyFont: { size: 16, weight: 'bold' },
+                    padding: 12,
+                    displayColors: false,
+                    callbacks: {
+                        label: function(context) {
+                            return context.raw.label;
+                        }
+                    }
+                }
+            }
+        }
+    });
+});
+</script>
+</body>
+</html>
